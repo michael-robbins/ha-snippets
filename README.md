@@ -7,6 +7,7 @@ Charge your Tesla completely offline via local connections to your PV inverter a
 
 To set this up, we assume you've already:
 * Setup [TeslaBleHttpProxy](https://github.com/wimaha/TeslaBleHttpProxy) and have it connected to the car (you can manually run commands via eg. `curl`)
+* Ensure [ha-average](https://github.com/Limych/ha-average) is installed
 
 ## Snippets
 [Tesla EV REST Sensors](snippets/tesla_ev_rest_sensors.yaml)
