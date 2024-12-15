@@ -1,0 +1,30 @@
+input_text:
+  tesla_vin:
+    name: Tesla VIN
+
+  ble_proxy_hostname:
+    name: Bluetooth Proxy Hostname
+    initial: "localhost:8081"
+
+rest:
+  - resource_template: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ states('input_text.tesla_vin') }}/vehicle_data?endpoints=charge_state"
+    scan_interval: 31536000 # 1 year, we manually trigger this
+    sensor:
+      - name: "Car Charging State"
+        unique_id: "car_charging_state"
+        value_template: "{{ value_json.response.charge_state.charging_state }}"
+      - name: "Car Charge Limit SoC"
+        unique_id: "car_charge_limit_soc"
+        state_class: "MEASUREMENT"
+        device_class: "BATTERY"
+        value_template: "{{ value_json.response.charge_state.charge_limit_soc }}"
+      - name: "Car Battery Level"
+        unique_id: "car_battery_level"
+        state_class: "MEASUREMENT"
+        device_class: "BATTERY"
+        value_template: "{{ value_json.response.charge_state.battery_level }}"
+      - name: "Car Charging Amps"
+        unique_id: "car_charging_amps"
+        state_class: "MEASUREMENT"
+        device_class: "CURRENT"
+        value_template: "{{ value_json.response.charge_state.charge_amps }}"
