@@ -11,4 +11,4 @@ To set this up, we assume you've already:
 ## Snippets
 [Tesla EV REST Sensors](snippets/tesla_ev_rest_sensors.yaml)
 
-A set of rest sensors that rely on https://github.com/wimaha/TeslaBleHttpProxy being accessible.
+A set of rest sensors that rely on [TeslaBleHttpProxy](https://github.com/wimaha/TeslaBleHttpProxy)
