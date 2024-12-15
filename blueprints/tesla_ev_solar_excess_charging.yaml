@@ -3,3 +3,14 @@ blueprint:
   description: Charge your Tesla EV on excess solar, no internet required
   domain: automation
   source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/main/blueprints/tesla_ev_solar_excess_charging.yaml
+
+  input:
+    tesla_wall_connector_connected:
+      name: Tesla Wall Connector Vehicle connected
+      description: Binary Sensor indicating if a car is plugged in
+      selector:
+        entity:
+          filter:
+            - integration: tesla_wall_connector
+            - domain: binary_sensor
+            - device_class: plug
