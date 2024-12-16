@@ -1,0 +1,26 @@
+# Change the below entities to your PV Inverter sensors as required
+
+sensor:
+  - platform: average
+    name: 'Average Solar Excess (1m)'
+    unique_id: average_solar_excess
+    duration:
+      minutes: 1
+    entities:
+      - sensor.my_solar_pv_active_export_sensor_in_W  # Change me
+
+  - platform: average
+    name: 'Average Solar Generation (1m)'
+    unique_id: average_solar_generation
+    duration:
+      minutes: 1
+    entities:
+      - sensor.my_solar_pv_active_generation_sensor_in_W  # Change me
+
+  - platform: average
+    name: 'Average Grid Import (1m)'
+    unique_id: average_grid_import
+    duration:
+      minutes: 1
+    entities:
+      - sensor.my_solar_pv_active_import_sensor_in_W  # Change me
