@@ -1,1 +1,64 @@
-# Required entities
+# Required entities to be placed in configuration.yaml or created via clickops in the UI/etc
+
+# General Section #
+###################
+
+# Controls if the automation handles charging on not
+# Allows you to disable the automation via scripts/etc
+input_boolean:
+  car_charging_enabled:
+    name: Car Charging Enabled
+    initial: "on"
+    icon: mdi:car
+
+# Car Section #
+###############
+
+# Ideally you have a Tesla Wall Charger, with the supported integration
+# This exposes a 'tesla_wall_connector_vehicle_connected' binary_sensor
+# If you have a different charger, you'll need to ensure a binary_sensor is available to use here
+# Or if you want to manage it manually
+input_boolean:
+  vehicle_connected:
+    name: Vehicle is connected to the charger
+    initial: "on"
+    icon: mdi:ev-station
+
+# Energy Section #
+##################
+
+# Ideally you have an integration into your Solar PV setup, which exposes the following three sensors
+# * Active Export (W)
+# * Active Import (W)
+# * Active Generation (W)
+
+# If you wanted to 'fake' it for now:
+input_number:
+  active_export:
+    name: House Active Export
+    icon: mdi:transmission-tower-export
+    unit_of_measurement: W
+    initial: 0
+    min: 0
+    max: 10000
+    step: 100
+    mode: box
+  active_import:
+    name: House Active Export
+    icon: mdi:transmission-tower-import
+    unit_of_measurement: W
+    initial: 0
+    min: 0
+    max: 10000
+    step: 100
+    mode: box
+  active_generation:
+    name: House Active Generation
+    icon: mdi:solar-power
+    unit_of_measurement: W
+    initial: 1000
+    min: 0
+    max: 10000
+    step: 100
+    mode: box
+
