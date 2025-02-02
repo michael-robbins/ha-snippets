@@ -30,6 +30,10 @@ template:
         state: "{{ states('input_boolean.vehicle_connected') }}"
         device_class: plug
 
+input_text:
+  car_charging_vin:
+    name: Car Charging VIN
+
 # Energy Section #
 ##################
 
@@ -37,8 +41,8 @@ template:
 # * Active Export (W)
 # * Active Import (W)
 # * Active Generation (W)
-
-# If you wanted to 'fake' it for now:
+# And ideally you have setup the recommended `ha-average` and entities
+# If not, and you want to 'fake' it, use these:
 input_number:
   active_export:
     name: House Active Export
