@@ -16,13 +16,19 @@ input_boolean:
 
 # Ideally you have a Tesla Wall Charger, with the supported integration
 # This exposes a 'tesla_wall_connector_vehicle_connected' binary_sensor
-# If you have a different charger, you'll need to ensure a binary_sensor is available to use here
-# Or if you want to manage it manually
+# If you have a different charger, ensure a binary_sensor is available
+# Or if you want to manage it manually, use the below snippet to expose a custom binary_sensor:
 input_boolean:
   vehicle_connected:
     name: Vehicle is connected to the charger
-    initial: "on"
+    initial: "off"
     icon: mdi:ev-station
+
+template:
+  - binary_sensor:
+      - name: "Vehicle Connected"
+        state: "{{ states('input_boolean.vehicle_connected') }}"
+        device_class: plug
 
 # Energy Section #
 ##################
