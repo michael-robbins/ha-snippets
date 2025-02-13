@@ -1,3 +1,5 @@
+# Required Input Entities
+#########################
 input_text:
   tesla_vin:
     name: Tesla VIN
@@ -6,6 +8,8 @@ input_text:
     name: Bluetooth Proxy Hostname
     initial: "localhost:8081"
 
+# REST Sensors
+##############
 rest:
   - resource_template: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ states('input_text.tesla_vin') }}/vehicle_data?endpoints=charge_state"
     scan_interval: 31536000 # 1 year, we manually trigger this
