@@ -5,12 +5,11 @@ blueprint:
   source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/main/blueprints/tesla_ev_solar_excess_charging.yaml
 
   input:
-    tesla_wall_connector_connected:
-      name: Tesla Wall Connector Vehicle connected
+    tesla_connected_to_charger:
+      name: Tesla connected to charger
       description: Binary Sensor indicating if a car is plugged in
       selector:
         entity:
           filter:
-            - integration: tesla_wall_connector
             - domain: binary_sensor
             - device_class: plug
