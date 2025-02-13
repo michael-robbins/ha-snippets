@@ -10,9 +10,5 @@ To set this up, we assume you've already:
 * [RECOMMENDED] Install [ha-average](https://github.com/Limych/ha-average)
   * And configure a series of 'averages' over your import and export sensors
   * See [these snippets](snippets/tesla_ev_solar_averages.yaml) for examples
-* [REQUIRED] The [following entities](snippets/tesla_ev_charging_required_entities.yaml) available to use by the blueprint
-
-## Snippets
-[Tesla EV REST Sensors](snippets/tesla_ev_rest_sensors.yaml)
-
-A set of rest sensors that rely on [TeslaBleHttpProxy](https://github.com/wimaha/TeslaBleHttpProxy)
+* [REQUIRED] The [following entities](snippets/tesla_ev_charging_required_entities.yaml) available to use by the automation
+* [REQUIRED] These [REST Sensors](snippets/tesla_ev_rest_sensors.yaml) are available to use by the automation
