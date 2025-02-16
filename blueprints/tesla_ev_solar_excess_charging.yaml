@@ -1,15 +1,295 @@
 blueprint:
-  name: Tesla EV Solar Excess Charging
-  description: Charge your Tesla EV on excess solar, no internet required
-  domain: automation
+  name: Tesla EV Charging On Excess Solar
+  author: michael-robbins
+  description: Configure your Tesla EV to charge on excess solar from your house.
   source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/main/blueprints/tesla_ev_solar_excess_charging.yaml
-
+  domain: automation
+  
   input:
-    tesla_connected_to_charger:
-      name: Tesla connected to charger
-      description: Binary Sensor indicating if a car is plugged in
-      selector:
-        entity:
-          filter:
-            - domain: binary_sensor
-            - device_class: plug
+    general_section:
+      name: General inputs
+      input:
+        car_charging_enabled:
+          name: Car Charging Enabled
+          description: Binary Sensor indicating if we should handle charging
+          selector:
+            entity:
+              filter:
+                - domain: binary_sensor
+
+    car_section:
+      name: Car related inputs
+      input:
+        tesla_wall_connector_connected:
+          name: Tesla Wall Connector Vehicle connected
+          description: Binary Sensor indicating if a car is plugged in
+          selector:
+            entity:
+              filter:
+                - domain: binary_sensor
+                  device_class: plug
+
+        tesla_wall_connector_charging:
+          name: Tesla Wall Connector Charging
+          description: Binary Sensor indicating if a car is charging
+          selector:
+            entity:
+              filter:
+                - domain: binary_sensor
+                  device_class: battery_charging
+
+        tesla_car_sleep_status:
+          name: Tesla Car Sleep Status
+          description: Text Sensor describing the cars sleep status
+          selector:
+            entity:
+              filter:
+                - domain: sensor
+
+        vin:
+          name: Tesla VIN
+          description: Used for vehicle commands
+          selector:
+            entity:
+              filter:
+                - integration: input_text
+
+        ble_proxy_hostname:
+          name: Bluetooth Proxy Hostname
+          description: Hostname for the TeslaBleHttpProxy application
+          selector:
+            entity:
+              filter:
+                - integration: input_text
+
+        car_battery_soc:
+          name: Car Battery State-of-Charge
+          selector:
+            entity:
+              filter:
+                - domain: number
+                  device_class: battery
+
+        car_battery_soc_limit:
+          name: Car Battery State-of-Charge limit
+          selector:
+            entity:
+              filter:
+                - domain: number
+                  device_class: battery
+
+        car_charging_amps:
+          name: Car Charging Amps
+          selector:
+            entity:
+              filter:
+                - domain: number
+                  device_class: current
+
+    charging_section:
+      name: Charging related inputs
+      input:
+        min_charging_amps:
+          name: Minimum charging amps
+          selector:
+            number:
+              min: 6
+              max: 32
+              unit_of_measurement: "A (6-32)"
+              mode: box
+
+        max_charging_amps:
+          name: Maximum charging amps
+          selector:
+            number:
+              min: 6
+              max: 32
+              unit_of_measurement: "A (6-32)"
+              mode: box
+
+        house_voltage:
+          name: House voltage
+          description: Either 120v or 240v
+          selector:
+            number:
+              min: 120
+              max: 240
+              unit_of_measurement: "V (120 or 240)"
+              mode: box
+
+    energy_section:
+      name: Energy related inputs
+      input:
+        house_active_export:
+          name: House Active Export
+          description: Live measurement in W (recommended to be an average)
+          selector:
+            entity:
+              filter:
+                - domain: sensor
+
+        house_active_import:
+          name: House Active Import
+          description: Live measurement in W (recommended to be an average)
+          selector:
+            entity:
+              filter:
+                - domain: sensor
+
+        solar_active_generation:
+          name: Solar PV Active Generation
+          description: Live measurement in W (recommended to be an average)
+          selector:
+            entity:
+              filter:
+                - domain: sensor
+
+        house_export_threshold:
+          name: House export threshold
+          description: Export amount to trigger scale up (start small, eg. 200W)
+          selector:
+            number:
+              min: 100
+              max: 2400
+              step: 100
+              unit_of_measurement: W
+              mode: slider
+
+        house_import_threshold:
+          name: House import threshold
+          description: Import amount to trigger scale down (start small, eg. 200W)
+          selector:
+            number:
+              min: 100
+              max: 2400
+              step: 100
+              unit_of_measurement: W
+              mode: slider
+
+triggers:
+  - trigger: time_pattern
+    minutes: /10
+
+conditions:
+  - condition: state
+    entity_id: !input car_charging_enabled
+    state: 'on'
+  - condition: state
+    entity_id: !input tesla_wall_connector_connected
+    state: 'on'
+
+actions:
+  - variables:
+      house_export_entity: !input house_active_export
+      house_import_entity: !input house_active_import
+      solar_generation_entity: !input solar_active_generation
+
+      vin_entity: !input vin
+      ble_proxy_hostname_entity: !input ble_proxy_hostname
+
+      tesla_car_sleep_status_entity: !input tesla_car_sleep_status
+
+      car_battery_soc_entity: !input car_battery_soc
+      car_battery_soc_limit_entity: !input car_battery_soc_limit
+      car_charging_amps_entity: !input car_charging_amps
+
+      house_export_threshold: !input house_export_threshold
+      house_import_threshold: !input house_import_threshold
+
+      house_export: "{{ states(house_export_entity) | round(0, 'floor', 0) }}"
+      house_import: "{{ states(house_import_entity) | round(0, 'floor', 0) }}"
+      solar_generation: "{{ states(solar_generation_entity) | round(0, 'floor', 0) }}"
+
+  # If the sun is not up, don't do anything
+  # Optionally stop charging if we are
+  - if:
+      - alias: Sun is not up
+        condition: not
+        conditions:
+          - condition: sun
+            after: sunrise
+            after_offset: "01:00:00"
+            before: sunset
+            before_offset: "-01:00:00"
+    then:
+      - if:
+          - alias: Car is charging
+            condition: state
+            entity_id: !input tesla_wall_connector_charging
+            state: "on"
+        then:
+          - alias: Stop charging
+            action: rest_command.stop_charging
+            data:
+              vin: !input vin
+
+      - stop: No charging when sun is down
+
+  # If the battery is full from earlier
+  - if:
+      - alias: Car stats current
+        condition: template
+        value_template: "{{ has_value('sensor.car_battery_level') and has_value('sensor.car_battery_soc_limit_entity') }}"
+      - alias: Car is charged
+        condition: template
+        value_template: "{{ states(car_battery_soc_entity) >= states(car_battery_soc_limit_entity) }}"
+    then:
+      - stop: Car is already charged
+
+  # Ensure an action has to be taken:
+  #  - We are exporting too much, charge faster
+  #  - We are importing too much, charge slower (or stop charging)
+  # If not, the current status of the car is fine
+  - conditions:
+      - condition: or
+        conditions:
+          - alias: Generating enough
+            condition: template
+            value_template: "{{ house_export > house_export_threshold }}"
+          - alias: Importing too much
+            condition: template
+            value_template: "{{ house_import > house_import_threshold }}"
+
+  # Refresh car body state to determine sleep/lock/etc
+  - alias: Refresh car sleep status
+    action: homeassistant.update_entity
+    data:
+      entity_id: !input tesla_car_sleep_status
+
+  # Wake the car up if it's asleep (as we want to do something)
+  - if:
+      - alias: Car is asleep
+        condition: template
+        value_template: "{{ states(tesla_car_sleep_status_entity) == 'VEHICLE_SLEEP_STATUS_ASLEEP' }}"
+    then:
+      - action: rest_command.wake_up
+        data:
+          vin: !input vin
+
+  # Refresh the cars charging sensors
+  - alias: Refresh car charging sensors
+    action: homeassistant.update_entity
+    data:
+      entity_id: !input car_battery_soc
+
+  # Check again if the battery is full from earlier
+  - if:
+      - alias: Car is charged
+        condition: template
+        value_template: "{{ states(car_battery_soc_entity) >= states(car_battery_soc_limit_entity) }}"
+    then:
+      - stop: Car is already charged
+
+  # Calculate new charge amps and set accordingly
+  # TODO
+  - choose:
+    - is_the_house_exporting_too_much
+        condition:
+          value_template: "{{ house_export > house_export_threshold }}"
+        then:
+          - recalculate_amps_and_set
+    - is_the_house_importing_too_much
+        condition:
+          value_template: "{{ house_import > house_import_threshold }}"
+        then:
+          - recalculate_amps_and_set
