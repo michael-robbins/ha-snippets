@@ -8,6 +8,27 @@ input_text:
     name: Bluetooth Proxy Hostname
     initial: "localhost:8081"
 
+# REST Commands
+###############
+rest_command:
+  wake_up:
+    url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/wake_up"
+    method: post
+  start_charging:
+    url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/charge_start"
+    method: post
+  stop_charging:
+    url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/charge_stop"
+    method: post
+  set_charging_amps:
+    url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/set_charging_amps"
+    method: post
+    payload: "{\"charging_amps\": \"{{ amps }}\"}"
+  set_charging_limit:
+    url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/set_charge_limit"
+    method: post
+    payload: "{\"percent\": \"{{ percent }}\"}"
+
 # REST Sensors
 ##############
 rest:
