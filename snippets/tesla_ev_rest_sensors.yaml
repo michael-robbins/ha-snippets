@@ -32,3 +32,12 @@ rest:
         state_class: "MEASUREMENT"
         device_class: "CURRENT"
         value_template: "{{ value_json.response.charge_state.charge_amps }}"
+  - resource_template: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ states('input_text.tesla_vin') }}/body_controller_state"
+    scan_interval: 31536000 # 1 year, we manually trigger this
+    sensor:
+      - name: "Car Lock Status"
+        unique_id: "car_lock_status"
+        value_template: "{{ value_json.response.response.vehicleLockState }}"
+      - name: "Car Sleep Status"
+        unique_id: "car_sleep_status"
+        value_template: "{{ value_json.response.response.vehicleSleepStatus }}"
