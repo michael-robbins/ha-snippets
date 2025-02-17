@@ -232,14 +232,12 @@ actions:
   #  - We are importing too much, charge slower (or stop charging)
   # If not, the current status of the car is fine
   - if:
-      conditions:
-        - condition: or
-          conditions:
-            - alias: Generating enough
-              condition: template
+      - conditions:
+        - alias: "Exporting or importing over threshold"
+          or:
+            - condition: template
               value_template: '{{ house_export > house_export_threshold_value }}'
-            - alias: Importing too much
-              condition: template
+            - condition: template
               value_template: '{{ house_import > house_import_threshold_value }}'
     else:
       stop: No action to take as everything within thresholds
