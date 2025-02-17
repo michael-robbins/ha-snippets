@@ -14,20 +14,25 @@ rest_command:
   wake_up:
     url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/wake_up?wait=true"
     method: post
+    timeout: 30
   start_charging:
     url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/charge_start?wait=true"
     method: post
+    timeout: 30
   stop_charging:
     url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/charge_stop?wait=true"
     method: post
+    timeout: 30
   set_charging_amps:
     url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/set_charging_amps?wait=true"
     method: post
     payload: "{\"charging_amps\": \"{{ amps }}\"}"
+    timeout: 30
   set_charging_limit:
     url: "http://{{ states('input_text.ble_proxy_hostname') }}/api/1/vehicles/{{ vin }}/command/set_charge_limit?wait=true"
     method: post
     payload: "{\"percent\": \"{{ percent }}\"}"
+    timeout: 30
 
 # REST Sensors
 ##############
