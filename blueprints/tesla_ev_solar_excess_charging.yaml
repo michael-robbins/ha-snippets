@@ -229,10 +229,12 @@ actions:
 
   # Don't do anything if we're not exporting or importing over the threshold
   - if:
-    - condition: template
-      value_template: '{{ house_export < house_export_threshold_value }}'
-    - condition: template
-      value_template: '{{ house_import < house_import_threshold_value }}'
+      - alias: Not exporting enough
+        condition: template
+        value_template: '{{ house_export < house_export_threshold_value }}'
+      - alias: Not importing enough
+        condition: template
+        value_template: '{{ house_import < house_import_threshold_value }}'
   then:
     - stop: No action to take as everything within thresholds
 
@@ -288,7 +290,8 @@ actions:
               new_amps: "{{ [max_charging_amps_input, desired_amps] | min }}"
               amps_have_changed: "{{ current_amps != new_amps }}"
           - if:
-              - "{{ amps_have_changed }}"
+              - condition: template
+                value_template: "{{ amps_have_changed }}"
             then:
               - action: rest_command.set_charging_amps
                 data:
@@ -307,7 +310,8 @@ actions:
               new_amps: "{{ [min_charging_amps_input, desired_amps] | min }}"
               amps_have_changed: "{{ current_amps != new_amps }}"
           - if:
-              - "{{ amps_have_changed }}"
+              - condition: template
+                value_template: "{{ amps_have_changed }}"
             then:
               - action: rest_command.set_charging_amps
                 data:
@@ -315,7 +319,8 @@ actions:
                   amps: "{{ new_amps }}"
             else:
               - if:
-                  - "{{ new_amps == min_charging_amps_input }}"
+                  - condition: template
+                    value_template: "{{ new_amps == min_charging_amps_input }}"
                 then:
                   - alias: Stop charging
                     action: rest_command.stop_charging
