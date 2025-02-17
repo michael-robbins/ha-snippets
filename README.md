@@ -12,3 +12,4 @@ To set this up, we assume you've already:
   * See [these snippets](snippets/tesla_ev_solar_averages.yaml) for examples
 * [REQUIRED] The [following entities](snippets/tesla_ev_charging_required_entities.yaml) available to use by the automation
 * [REQUIRED] These [REST Sensors, REST Command and entities](snippets/tesla_ev_rest_sensors.yaml) are available to use by the automation
+* Import the blueprint into Home Assistant with this URL: `https://raw.githubusercontent.com/michael-robbins/ha-snippets/refs/heads/main/blueprints/tesla_ev_solar_excess_charging.yaml`
