@@ -15,7 +15,7 @@ blueprint:
           selector:
             entity:
               filter:
-                - domain: input_boolean
+                - integration: input_text
 
     car_section:
       name: Car related inputs
