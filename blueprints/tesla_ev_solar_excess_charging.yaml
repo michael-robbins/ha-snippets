@@ -4,7 +4,7 @@ blueprint:
   description: Configure your Tesla EV to charge on excess solar from your house.
   source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/main/blueprints/tesla_ev_solar_excess_charging.yaml
   domain: automation
-  
+
   input:
     general_section:
       name: General inputs
@@ -49,14 +49,6 @@ blueprint:
         vin:
           name: Tesla VIN
           description: Used for vehicle commands
-          selector:
-            entity:
-              filter:
-                - integration: input_text
-
-        ble_proxy_hostname:
-          name: Bluetooth Proxy Hostname
-          description: Hostname for the TeslaBleHttpProxy application
           selector:
             entity:
               filter:
@@ -184,21 +176,20 @@ actions:
       house_import_entity: !input house_active_import
       solar_generation_entity: !input solar_active_generation
 
+      house_export: "{{ states(house_export_entity) | round(0, 'floor', 0) }}"
+      house_import: "{{ states(house_import_entity) | round(0, 'floor', 0) }}"
+      solar_generation: "{{ states(solar_generation_entity) | round(0, 'floor', 0) }}"
+
       vin_entity: !input vin
-      ble_proxy_hostname_entity: !input ble_proxy_hostname
+      vin_text: "{{ states(vin_entity) }}"
 
       tesla_car_sleep_status_entity: !input tesla_car_sleep_status
-
       car_battery_soc_entity: !input car_battery_soc
       car_battery_soc_limit_entity: !input car_battery_soc_limit
       car_charging_amps_entity: !input car_charging_amps
 
-      house_export_threshold: !input house_export_threshold
-      house_import_threshold: !input house_import_threshold
-
-      house_export: "{{ states(house_export_entity) | round(0, 'floor', 0) }}"
-      house_import: "{{ states(house_import_entity) | round(0, 'floor', 0) }}"
-      solar_generation: "{{ states(solar_generation_entity) | round(0, 'floor', 0) }}"
+      house_export_threshold_value: !input house_export_threshold
+      house_import_threshold_value: !input house_import_threshold
 
   # If the sun is not up, don't do anything
   # Optionally stop charging if we are
@@ -221,7 +212,7 @@ actions:
           - alias: Stop charging
             action: rest_command.stop_charging
             data:
-              vin: !input vin
+              vin: "{{ vin_text }}"
 
       - stop: No charging when sun is down
 
@@ -245,10 +236,10 @@ actions:
         conditions:
           - alias: Generating enough
             condition: template
-            value_template: "{{ house_export > house_export_threshold }}"
+            value_template: "{{ house_export > house_export_threshold_value }}"
           - alias: Importing too much
             condition: template
-            value_template: "{{ house_import > house_import_threshold }}"
+            value_template: "{{ house_import > house_import_threshold_value }}"
 
   # Refresh car body state to determine sleep/lock/etc
   - alias: Refresh car sleep status
@@ -264,7 +255,7 @@ actions:
     then:
       - action: rest_command.wake_up
         data:
-          vin: !input vin
+          vin: "{{ vin_text }}"
 
   # Refresh the cars charging sensors
   - alias: Refresh car charging sensors
@@ -280,16 +271,70 @@ actions:
     then:
       - stop: Car is already charged
 
+  - alias: Set variables
+    variables:
+      min_charging_amps_input: !input min_charging_amps
+      max_charging_amps_input: !input max_charging_amps
+      house_voltage_input: !input house_voltage
+
+      current_amps: "{{ states(car_charging_amps_entity) | int }}"
+
   # Calculate new charge amps and set accordingly
-  # TODO
   - choose:
-    - is_the_house_exporting_too_much
-        condition:
-          value_template: "{{ house_export > house_export_threshold }}"
-        then:
-          - recalculate_amps_and_set
-    - is_the_house_importing_too_much
-        condition:
-          value_template: "{{ house_import > house_import_threshold }}"
-        then:
-          - recalculate_amps_and_set
+      - conditions:
+          - alias: House is exporting too much
+            condition: template
+            value_template: "{{ house_export > house_export_threshold_value }}"
+        sequence:
+          - alias: Calculate new amps
+            variables:
+              excess_amps: "{{ (house_export / house_voltage_input) | round(0, 'floor') }}"
+              desired_amps: "{{ current_amps + excess_amps }}"
+              new_amps: "{{ [max_charging_amps_input, desired_amps] | min }}"
+              amps_have_changed: "{{ current_amps != new_amps }}"
+          - if:
+              - "{{ amps_have_changed }}"
+            then:
+              - action: rest_command.set_charging_amps
+                data:
+                  vin: "{{ vin_text }}"
+                  amps: "{{ new_amps }}"
+
+      - conditions:
+          - alias: House is importing too much
+            condition: template
+            value_template: "{{ house_import > house_import_threshold_value }}"
+        sequence:
+          - alias: Calculate new amps
+            variables:
+              excess_amps: "{{ (house_import / house_voltage_input) | round(0, 'floor') }}"
+              desired_amps: "{{ current_amps - excess_amps }}"
+              new_amps: "{{ [min_charging_amps_input, desired_amps] | min }}"
+              amps_have_changed: "{{ current_amps != new_amps }}"
+          - if:
+              - "{{ amps_have_changed }}"
+            then:
+              - action: rest_command.set_charging_amps
+                data:
+                  vin: "{{ vin_text }}"
+                  amps: "{{ new_amps }}"
+            else:
+              - if:
+                  - "{{ new_amps == min_charging_amps_input }}"
+                then:
+                  - alias: Stop charging
+                    action: rest_command.stop_charging
+                    data:
+                      vin: "{{ vin_text }}"
+                  - stop: "Charging stopped due to excess import"
+
+  - if:
+      - alias: Car is not charging
+        condition: state
+        entity_id: !input tesla_wall_connector_charging
+        state: "off"
+    then:
+      - alias: Start charging
+        action: rest_command.start_charging
+        data:
+          vin: "{{ vin_text }}"
