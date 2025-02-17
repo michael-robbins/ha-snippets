@@ -59,7 +59,7 @@ blueprint:
           selector:
             entity:
               filter:
-                - domain: number
+                - domain: sensor
                   device_class: battery
 
         car_battery_soc_limit:
@@ -67,7 +67,7 @@ blueprint:
           selector:
             entity:
               filter:
-                - domain: number
+                - domain: sensor
                   device_class: battery
 
         car_charging_amps:
@@ -75,7 +75,7 @@ blueprint:
           selector:
             entity:
               filter:
-                - domain: number
+                - domain: sensor
                   device_class: current
 
     charging_section:
