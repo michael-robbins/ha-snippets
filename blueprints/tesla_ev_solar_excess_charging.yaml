@@ -240,6 +240,18 @@ actions:
           - alias: Importing too much
             condition: template
             value_template: "{{ house_import > house_import_threshold_value }}"
+  - if:
+      conditions:
+        - condition: or
+          conditions:
+            - alias: Generating enough
+              condition: template
+              value_template: '{{ house_export > house_export_threshold_value }}'
+            - alias: Importing too much
+              condition: template
+              value_template: '{{ house_import > house_import_threshold_value }}'
+    else:
+      stop: No action to take as everything within thresholds
 
   # Refresh car body state to determine sleep/lock/etc
   - alias: Refresh car sleep status
