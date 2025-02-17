@@ -2,7 +2,7 @@ blueprint:
   name: Tesla EV Charging On Excess Solar
   author: michael-robbins
   description: Configure your Tesla EV to charge on excess solar from your house.
-  source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/main/blueprints/tesla_ev_solar_excess_charging.yaml
+  source_url: https://raw.githubusercontent.com/michael-robbins/ha-snippets/refs/heads/main/blueprints/tesla_ev_solar_excess_charging.yaml
   domain: automation
 
   input:
