@@ -214,7 +214,7 @@ actions:
             data:
               vin: "{{ vin_text }}"
 
-      - stop: No charging when sun is down
+          - stop: No charging when sun is down
 
   # If the battery is full from earlier
   - if:
@@ -235,8 +235,8 @@ actions:
       - alias: Not importing enough
         condition: template
         value_template: '{{ house_import < house_import_threshold_value }}'
-  then:
-    - stop: No action to take as everything within thresholds
+    then:
+      - stop: No action to take as everything within thresholds
 
   # Refresh car body state to determine sleep/lock/etc
   - alias: Refresh car sleep status
