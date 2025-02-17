@@ -231,12 +231,24 @@ actions:
   - if:
       - alias: Not exporting enough
         condition: template
-        value_template: '{{ house_export < house_export_threshold_value }}'
+        value_template: '{{ house_export <= house_export_threshold_value }}'
       - alias: Not importing enough
         condition: template
-        value_template: '{{ house_import < house_import_threshold_value }}'
+        value_template: '{{ house_import <= house_import_threshold_value }}'
     then:
       - stop: No action to take as everything within thresholds
+
+  # If the car is not charging and we're importing too much, do nothing
+  - if:
+      - alias: Importing too much
+        condition: template
+        value_template: '{{ house_import >= house_import_threshold_value }}'
+      - alias: Car is not charging
+        condition: state
+        entity_id: !input tesla_wall_connector_charging
+        state: "off"
+    then:
+      - stop: No action to take as car is not charging
 
   # Refresh car body state to determine sleep/lock/etc
   - alias: Refresh car sleep status
