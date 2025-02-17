@@ -227,20 +227,14 @@ actions:
     then:
       - stop: Car is already charged
 
-  # Ensure an action has to be taken:
-  #  - We are exporting too much, charge faster
-  #  - We are importing too much, charge slower (or stop charging)
-  # If not, the current status of the car is fine
+  # Don't do anything if we're not exporting or importing over the threshold
   - if:
-      - conditions:
-        - alias: "Exporting or importing over threshold"
-          or:
-            - condition: template
-              value_template: '{{ house_export > house_export_threshold_value }}'
-            - condition: template
-              value_template: '{{ house_import > house_import_threshold_value }}'
-    else:
-      stop: No action to take as everything within thresholds
+    - condition: template
+      value_template: '{{ house_export < house_export_threshold_value }}'
+    - condition: template
+      value_template: '{{ house_import < house_import_threshold_value }}'
+  then:
+    - stop: No action to take as everything within thresholds
 
   # Refresh car body state to determine sleep/lock/etc
   - alias: Refresh car sleep status
