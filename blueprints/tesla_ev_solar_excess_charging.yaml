@@ -307,7 +307,7 @@ actions:
             variables:
               excess_amps: "{{ (house_import / house_voltage_input) | round(0, 'floor') }}"
               desired_amps: "{{ current_amps - excess_amps }}"
-              new_amps: "{{ [min_charging_amps_input, desired_amps] | min }}"
+              new_amps: "{{ [min_charging_amps_input, desired_amps] | max }}"
               amps_have_changed: "{{ current_amps != new_amps }}"
           - if:
               - condition: template
