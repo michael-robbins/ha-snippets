@@ -15,7 +15,7 @@ blueprint:
           selector:
             entity:
               filter:
-                - domain: binary_sensor
+                - domain: input_boolean
 
     car_section:
       name: Car related inputs
