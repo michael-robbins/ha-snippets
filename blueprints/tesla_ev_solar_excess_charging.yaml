@@ -11,11 +11,11 @@ blueprint:
       input:
         car_charging_enabled:
           name: Car Charging Enabled
-          description: Binary Sensor indicating if we should handle charging
+          description: Input Boolean indicating if we should handle charging
           selector:
             entity:
               filter:
-                - integration: input_text
+                - integration: input_boolean
 
     car_section:
       name: Car related inputs
