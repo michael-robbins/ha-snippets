@@ -214,7 +214,7 @@ actions:
             data:
               vin: "{{ vin_text }}"
 
-          - stop: No charging when sun is down
+      - stop: No charging when sun is down
 
   # If the battery is full from earlier
   - if:
