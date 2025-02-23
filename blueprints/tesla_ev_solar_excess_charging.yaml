@@ -227,6 +227,14 @@ actions:
     then:
       - stop: Car is already charged
 
+  # Don't do anything if we don't have solar data
+  - if:
+      - alias: Solar data not available
+        condition: template
+        value_template: "{{ not has_value(house_export_entity) or not has_value(house_import_entity) }}"
+    then:
+      - stop: Solar data not available
+
   # Don't do anything if we're not exporting or importing over the threshold
   - if:
       - alias: Not exporting enough
