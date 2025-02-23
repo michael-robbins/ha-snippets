@@ -220,7 +220,7 @@ actions:
   - if:
       - alias: Car stats current
         condition: template
-        value_template: "{{ has_value('sensor.car_battery_level') and has_value('sensor.car_battery_soc_limit_entity') }}"
+        value_template: "{{ has_value(car_battery_soc_entity) and has_value(car_battery_soc_limit_entity) }}"
       - alias: Car is charged
         condition: template
         value_template: "{{ states(car_battery_soc_entity) >= states(car_battery_soc_limit_entity) }}"
